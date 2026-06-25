@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f0c29" />
+  <meta name="description" content="برنامه امتحانات تیر - باردیا" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="برنامه تیر" />
+  <title>برنامه امتحانات تیر</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #0a0820;
+      --bg-mid:     #130f35;
+      --accent-1:   #7c3aed;
+      --accent-2:   #a855f7;
+      --accent-3:   #c084fc;
+      --thermo:     #f97316;
+      --thermo-dim: rgba(249,115,22,0.18);
+      --elec:       #06b6d4;
+      --elec-dim:   rgba(6,182,212,0.18);
+      --gym-tag:    rgba(167,243,208,0.18);
+      --glass-bg:   rgba(255,255,255,0.05);
+      --glass-bdr:  rgba(255,255,255,0.10);
+      --glass-hi:   rgba(255,255,255,0.08);
+      --text-main:  #f1f0ff;
+      --text-sub:   #a09bb8;
+      --text-muted: #6b6480;
+      --today-ring: #a855f7;
+      --exam-thermo: #ff9240;
+      --exam-elec:   #22d3ee;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Vazirmatn', system-ui, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated Background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 0%,   rgba(124,58,237,0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 100%,  rgba(168,85,247,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%,   rgba(6,182,212,0.08)  0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap { position: relative; z-index: 1; padding-bottom: 40px; }
+
+    /* ── Header ── */
+    .header {
+      padding: 28px 20px 0;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: linear-gradient(to bottom, rgba(10,8,32,0.95) 80%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .header-inner {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .header-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      color: var(--accent-3);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 16px;
+    }
+
+    /* ── Today Banner ── */
+    .today-banner {
+      background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(168,85,247,0.15));
+      border: 1px solid rgba(168,85,247,0.35);
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin: 0 auto 20px;
+      max-width: 520px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      text-align: right;
+    }
+
+    .today-banner .today-date-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .today-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      flex-shrink: 0;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100%{ opacity:1; transform:scale(1); }
+      50%{ opacity:0.5; transform:scale(1.4); }
+    }
+
+    .today-label {
+      font-size: 11px;
+      color: var(--accent-3);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+
+    .today-date-str {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .today-tasks-title {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+    }
+
+    .today-tasks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .today-task-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .today-task-icon {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .today-task-icon.thermo { background: var(--thermo-dim); color: var(--thermo); }
+    .today-task-icon.elec   { background: var(--elec-dim);   color: var(--elec); }
+
+    .no-today {
+      font-size: 14px;
+      color: var(--text-sub);
+      text-align: center;
+      padding: 4px 0;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      padding: 0 20px 18px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--text-sub); font-weight: 500;
+    }
+    .legend-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+
+    /* ── Calendar Grid ── */
+    .calendar-section {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    .month-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      padding-right: 4px;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .cal-weekday {
+      text-align: center;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding: 4px 0;
+    }
+
+    /* ── Day Card ── */
+    .day-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-bdr);
+      border-radius: 12px;
+      padding: 7px 5px 8px;
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s, background 0.18s, border-color 0.18s;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      min-height: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .day-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(124,58,237,0.18);
+      border-color: rgba(168,85,247,0.3);
+    }
+
+    .day-card.is-today {
+      border-color: var(--today-ring);
+      background: rgba(124,58,237,0.12);
+      box-shadow: 0 0 0 1px rgba(168,85,247,0.4), 0 4px 16px rgba(124,58,237,0.2);
+    }
+
+    .day-card.is-exam-thermo {
+      background: rgba(249,115,22,0.10);
+      border-color: rgba(249,115,22,0.45);
+    }
+    .day-card.is-exam-elec {
+      background: rgba(6,182,212,0.10);
+      border-color: rgba(6,182,212,0.45);
+    }
+
+    .day-card.past {
+      opacity: 0.45;
+    }
+
+    .day-card.empty {
+      background: transparent;
+      border-color: transparent;
+      pointer-events: none;
+      min-height: 0;
+    }
+
+    .day-num {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .day-card.is-today .day-num {
+      color: var(--accent-3);
+    }
+
+    .day-card.is-exam-thermo .day-num { color: var(--exam-thermo); }
+    .day-card.is-exam-elec  .day-num  { color: var(--exam-elec); }
+
+    .day-gym-tag {
+      font-size: 9px;
+      font-weight: 600;
+      color: #6ee7b7;
+      background: rgba(167,243,208,0.12);
+      border-radius: 4px;
+      padding: 1px 5px;
+      line-height: 1.5;
+    }
+
+    .day-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .pill {
+      font-size: 9px;
+      font-weight: 600;
+      border-radius: 5px;
+      padding: 1px 5px;
+      line-height: 1.5;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pill.thermo {
+      background: var(--thermo-dim);
+      color: var(--thermo);
+    }
+    .pill.elec {
+      background: var(--elec-dim);
+      color: var(--elec);
+    }
+    .pill.exam-thermo {
+      background: rgba(249,115,22,0.25);
+      color: var(--exam-thermo);
+      font-size: 10px;
+    }
+    .pill.exam-elec {
+      background: rgba(6,182,212,0.25);
+      color: var(--exam-elec);
+      font-size: 10px;
+    }
+
+    /* ── Detail Drawer ── */
+    .drawer-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      backdrop-filter: blur(3px);
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+    .drawer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 101;
+      background: linear-gradient(160deg, #1a1240 0%, #120e30 100%);
+      border-top: 1px solid rgba(168,85,247,0.25);
+      border-radius: 22px 22px 0 0;
+      padding: 12px 24px 40px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1);
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+    .drawer.open { transform: translateY(0); }
+
+    .drawer-handle {
+      width: 36px; height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.2);
+      margin: 0 auto 20px;
+    }
+
+    .drawer-date {
+      font-size: 13px;
+      color: var(--accent-3);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .drawer-headline {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 20px;
+    }
+
+    .detail-section {
+      margin-bottom: 18px;
+    }
+
+    .detail-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .detail-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .detail-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-bdr);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .detail-card.thermo-card { border-color: rgba(249,115,22,0.22); }
+    .detail-card.elec-card   { border-color: rgba(6,182,212,0.22); }
+
+    .detail-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .detail-card-label.thermo { color: var(--thermo); }
+    .detail-card-label.elec   { color: var(--elec); }
+
+    .detail-card-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .detail-card-unit {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .detail-video-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .detail-video-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-bdr);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .detail-video-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .detail-video-icon.thermo { background: var(--thermo-dim); }
+    .detail-video-icon.elec   { background: var(--elec-dim); }
+
+    .detail-video-text { flex: 1; }
+    .detail-video-name { font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .detail-video-sub  { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+
+    .detail-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .detail-badge.thermo { background: var(--thermo-dim); color: var(--thermo); }
+    .detail-badge.elec   { background: var(--elec-dim);   color: var(--elec); }
+
+    .gym-notice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(167,243,208,0.07);
+      border: 1px solid rgba(167,243,208,0.18);
+      border-radius: 12px;
+      padding: 11px 14px;
+      margin-bottom: 18px;
+    }
+    .gym-notice-icon { font-size: 18px; }
+    .gym-notice-text { font-size: 13px; color: #6ee7b7; font-weight: 500; }
+
+    .exam-notice {
+      border-radius: 14px;
+      padding: 18px 16px;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .exam-notice.thermo-exam {
+      background: rgba(249,115,22,0.12);
+      border: 1px solid rgba(249,115,22,0.35);
+    }
+    .exam-notice.elec-exam {
+      background: rgba(6,182,212,0.12);
+      border: 1px solid rgba(6,182,212,0.35);
+    }
+    .exam-notice-emoji { font-size: 28px; margin-bottom: 6px; }
+    .exam-notice-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
+    .exam-notice-sub   { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+
+    .review-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .review-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-main);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-bdr);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .review-item::before {
+      content: '◆';
+      font-size: 8px;
+      color: var(--accent-3);
+      flex-shrink: 0;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-label">برنامه امتحانات</div>
+      <div class="header-title">تیر ۱۴۰۴</div>
+    </div>
+
+    <div class="today-banner" id="todayBanner"></div>
+  </header>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--thermo)"></span>ترمودینامیک</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--elec)"></span>کاربرد برق</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#6ee7b7"></span>باشگاه</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--exam-thermo)"></span>امتحان</div>
+  </div>
+
+  <div class="calendar-section">
+    <div class="month-label">تیر ۱۴۰۴</div>
+    <div class="cal-grid" id="weekdayRow"></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div id="drawerContent"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════
+
+const GYM_DAYS = [6, 8, 10, 13, 15, 17, 20, 22, 24,27,29,31]; // تیر days that are gym days (شنبه، دوشنبه، چهارشنبه)
+
+const THERMO_VIDEOS = {
+  4:2,5:2, 6:1, 7:2, 8:1, 9:2, 10:1, 11:2, 12:2, 13:1, 14:2, 15:1, 16:2, 17:1, 18:2
+};
+
+const ELEC_VIDEOS = {
+  4:[1,2,3,4,5,6,7,8],5: [9,10], 6: [11], 7: [12,13], 8: [14], 9: [15,16], 10: [17],
+  11: [18,19], 12: [20,21], 13: [22], 14: [23,24], 15: [25], 16: [26,27],
+  17: [28], 18: [29,30], 19: [31,32], 20: [33]
+};
+
+const QUESTIONS = {
+  4:{thermo:10,elec:10},5:{thermo:10,elec:10}, 6:{thermo:5,elec:5}, 7:{thermo:10,elec:10},
+  8:{thermo:5,elec:5}, 9:{thermo:10,elec:10}, 10:{thermo:5,elec:5},
+  11:{thermo:10,elec:10}, 12:{thermo:10,elec:10}, 13:{thermo:5,elec:5},
+  14:{thermo:10,elec:10}, 15:{thermo:5,elec:5}, 16:{thermo:10,elec:10},
+  17:{thermo:5,elec:5}, 18:{thermo:10,elec:10}, 19:{thermo:10,elec:10},
+  20:{thermo:5,elec:5}
+};
+
+const REVIEW_THERMO = {
+  21: ['مرور خلاصه‌ها', 'مرور فرمول‌ها', 'مرور کوییزها', 'حل ۱۵ تا ۲۰ سوال منتخب'],
+  22: ['آزمون شبیه‌سازی', 'مرور اشتباهات', 'جمع‌بندی نهایی'],
+};
+
+const REVIEW_ELEC = {
+  23: ['استراحت', 'مرور نکات برق'],
+  24: ['حل سوالات پرتکرار استاد', 'مرور فرمول‌ها'],
+  25: ['آزمون جمع‌بندی'],
+  26: ['مرور نهایی و رفع اشکال'],
+};
+
+const EXAM_THERMO = 23;
+const EXAM_ELEC   = 27;
+
+// ═══════════════════════════════════════
+//  PERSIAN DATE UTILITIES
+// ═══════════════════════════════════════
+
+// Today in Jalali: simple converter
+function toJalali(gy, gm, gd) {
+  // Simplified Persian calendar converter
+  const g_d_no = [31,28+((gy%4==0&&gy%100!=0)||(gy%400==0)),31,30,31,30,31,31,30,31,30,31];
+  const j_d_no = [31,31,31,31,31,31,30,30,30,30,30,29];
+  let jy,jm,jd,g_day_no,j_day_no,leap;
+  gy -= 1600; gm -= 1; gd -= 1;
+  g_day_no = 365*gy + Math.floor((gy+3)/4) - Math.floor((gy+99)/100) + Math.floor((gy+399)/400);
+  for(let i=0;i<gm;i++) g_day_no += g_d_no[i];
+  g_day_no += gd;
+  j_day_no = g_day_no - 79;
+  let j_np = Math.floor(j_day_no/12053); j_day_no %= 12053;
+  jy = 979 + 33*j_np + 4*Math.floor(j_day_no/1461);
+  j_day_no %= 1461;
+  if(j_day_no >= 366){ jy += Math.floor((j_day_no-1)/365); j_day_no = (j_day_no-1)%365; }
+  for(let i=0;i<11&&j_day_no>=j_d_no[i];i++){ j_day_no-=j_d_no[i]; jy+=0; /* jm placeholder */ }
+  // recalc month
+  j_day_no = g_day_no - 79;
+  j_np = Math.floor(j_day_no/12053); j_day_no %= 12053;
+  jy = 979 + 33*j_np + 4*Math.floor(j_day_no/1461);
+  j_day_no %= 1461;
+  if(j_day_no >= 366){ jy += Math.floor((j_day_no-1)/365); j_day_no = (j_day_no-1)%365; }
+  jm=0;
+  for(let i=0;i<11&&j_day_no>=j_d_no[i];i++){ j_day_no-=j_d_no[i]; jm++; }
+  jm++; jd=j_day_no+1;
+  return [jy,jm,jd];
+}
+
+function todayJalali() {
+  const now = new Date();
+  return toJalali(now.getFullYear(), now.getMonth()+1, now.getDate());
+}
+
+// ═══════════════════════════════════════
+//  BUILD CALENDAR
+// ═══════════════════════════════════════
+
+// Tir 1404 starts on Saturday (شنبه) in the Iranian calendar week
+// Week: شنبه(0) یکشنبه(1) دوشنبه(2) سه‌شنبه(3) چهارشنبه(4) پنجشنبه(5) جمعه(6)
+const WEEKDAYS = ['ش','ی','د','س','چ','پ','ج'];
+const WEEKDAY_FULL = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+
+// Tir 1404 day 1 = Saturday = index 0
+// Let's determine what day of week Tir 1 falls on
+// Tir 1, 1404 = June 22, 2026 (Gregorian) → Sunday (0 in JS)
+// Iranian week starts Saturday, so: Sun=1, Mon=2, Tue=3, Wed=4, Thu=5, Fri=6, Sat=0
+function gregorianDayToIranian(jsDay) {
+  // jsDay: 0=Sun,1=Mon,...,6=Sat
+  // Iranian: 0=Sat,1=Sun,...,6=Fri
+  return (jsDay + 1) % 7;
+}
+
+// Tir 1, 1404 = June 22, 2026 → let's compute
+const tir1_2026 = new Date(2026, 5, 22); // June 22 2026
+const tir1_irDay = gregorianDayToIranian(tir1_2026.getDay()); // 0=Sat
+
+const [todayJY, todayJM, todayJD] = todayJalali();
+const isTirMonth = todayJY === 1405 && todayJM === 4;
+
+function getDayInfo(day) {
+  const isGym    = GYM_DAYS.includes(day);
+  const thermoV  = THERMO_VIDEOS[day] || 0;
+  const elecV    = ELEC_VIDEOS[day]   || [];
+  const qs       = QUESTIONS[day]      || null;
+  const reviewT  = REVIEW_THERMO[day] || null;
+  const reviewE  = REVIEW_ELEC[day]   || null;
+  const isExamT  = day === EXAM_THERMO;
+  const isExamE  = day === EXAM_ELEC;
+  return { isGym, thermoV, elecV, qs, reviewT, reviewE, isExamT, isExamE };
+}
+
+function renderCalendar() {
+  const weekdayRow = document.getElementById('weekdayRow');
+  const grid = document.getElementById('calGrid');
+
+  // Weekday headers
+  weekdayRow.innerHTML = WEEKDAYS.map(d =>
+    `<div class="cal-weekday">${d}</div>`
+  ).join('');
+
+  // Empty cells before day 1
+  let html = '';
+  for (let i = 0; i < tir1_irDay; i++) {
+    html += `<div class="day-card empty"></div>`;
+  }
+
+  // 31 days in Tir
+  for (let d = 1; d <= 31; d++) {
+    const info = getDayInfo(d);
+    const isToday = isTirMonth && d === todayJD;
+    const isPast  = isTirMonth ? d < todayJD : false;
+    const future  = isTirMonth ? d > todayJD : true;
+
+    let classes = 'day-card';
+    if (isToday)      classes += ' is-today';
+    if (isPast)       classes += ' past';
+    if (info.isExamT) classes += ' is-exam-thermo';
+    if (info.isExamE) classes += ' is-exam-elec';
+
+    let innerHtml = `<div class="day-num">${toPersianNum(d)}</div>`;
+
+    if (info.isGym) innerHtml += `<div class="day-gym-tag">باشگاه</div>`;
+
+    innerHtml += `<div class="day-pills">`;
+    if (info.isExamT) {
+      innerHtml += `<div class="pill exam-thermo">امتحان ترمو</div>`;
+    } else if (info.isExamE) {
+      innerHtml += `<div class="pill exam-elec">امتحان برق</div>`;
+    } else {
+      if (info.thermoV > 0)
+        innerHtml += `<div class="pill thermo">ترمو ×${toPersianNum(info.thermoV)}</div>`;
+      if (info.elecV.length > 0)
+        innerHtml += `<div class="pill elec">برق ×${toPersianNum(info.elecV.length)}</div>`;
+      if (info.reviewT)
+        innerHtml += `<div class="pill thermo">جمع‌بندی</div>`;
+      if (info.reviewE)
+        innerHtml += `<div class="pill elec">جمع‌بندی</div>`;
+    }
+    innerHtml += `</div>`;
+
+    html += `<div class="${classes}" onclick="openDrawer(${d})">${innerHtml}</div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+//  TODAY BANNER
+// ═══════════════════════════════════════
+
+function renderTodayBanner() {
+  const banner = document.getElementById('todayBanner');
+  let html = '';
+
+  if (!isTirMonth) {
+    banner.innerHTML = `<div class="no-today">برنامه از 4 تیر ۱۴۰۴ شروع می‌شود</div>`;
+    return;
+  }
+
+  const d = todayJD;
+  const info = getDayInfo(d);
+  const weekDayIr = gregorianDayToIranian(new Date().getDay());
+  const weekDayName = WEEKDAY_FULL[weekDayIr];
+
+  html += `<div class="today-date-row">
+    <span class="today-dot"></span>
+    <span class="today-label">امروز</span>
+    <span class="today-date-str">${weekDayName}، ${toPersianNum(d)} تیر</span>
+  </div>`;
+
+  html += `<div class="today-tasks-title">وظایف امروز:</div>`;
+  html += `<div class="today-tasks-list">`;
+
+  if (info.isExamT) {
+    html += `<div class="today-task-item"><div class="today-task-icon thermo">📝</div>امتحان ترمودینامیک ۲</div>`;
+  } else if (info.isExamE) {
+    html += `<div class="today-task-item"><div class="today-task-icon elec">📝</div>امتحان کاربرد برق و الکترونیک</div>`;
+  } else {
+    if (info.thermoV > 0)
+      html += `<div class="today-task-item"><div class="today-task-icon thermo">🔥</div>ترمودینامیک: ${toPersianNum(info.thermoV)} ویدیو</div>`;
+    if (info.elecV.length > 0)
+      html += `<div class="today-task-item"><div class="today-task-icon elec">⚡</div>کاربرد برق: جلسه ${info.elecV.map(v=>toPersianNum(v)).join(' و ')}</div>`;
+    if (info.qs) {
+      html += `<div class="today-task-item"><div class="today-task-icon thermo">📖</div>${toPersianNum(info.qs.thermo)} سوال ترمودینامیک</div>`;
+      html += `<div class="today-task-item"><div class="today-task-icon elec">📖</div>${toPersianNum(info.qs.elec)} سوال کاربرد برق</div>`;
+    }
+    if (info.reviewT) {
+      info.reviewT.forEach(t => html += `<div class="today-task-item"><div class="today-task-icon thermo">🔥</div>${t}</div>`);
+    }
+    if (info.reviewE) {
+      info.reviewE.forEach(t => html += `<div class="today-task-item"><div class="today-task-icon elec">⚡</div>${t}</div>`);
+    }
+    if (info.isGym) {
+      html += `<div class="today-task-item"><div class="today-task-icon" style="background:rgba(167,243,208,0.15);color:#6ee7b7">💪</div>روز باشگاه</div>`;
+    }
+    if (!info.thermoV && !info.elecV.length && !info.reviewT && !info.reviewE && d <= 27) {
+      html += `<div class="no-today">روز آزاد / استراحت</div>`;
+    }
+    if (d > 27) {
+      html += `<div class="no-today">بعد از اتمام امتحانات 🎉</div>`;
+    }
+  }
+
+  html += `</div>`;
+  banner.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+//  DRAWER
+// ═══════════════════════════════════════
+
+function openDrawer(day) {
+  const info = getDayInfo(day);
+  const weekDayIr = (tir1_irDay + day - 1) % 7;
+  const weekDayName = WEEKDAY_FULL[weekDayIr];
+
+  let html = `
+    <div class="drawer-date">${weekDayName}، ${toPersianNum(day)} تیر ۱۴۰۴</div>
+  `;
+
+  if (info.isExamT) {
+    html += `
+      <div class="exam-notice thermo-exam">
+        <div class="exam-notice-emoji">📝</div>
+        <div class="exam-notice-title">امتحان ترمودینامیک ۲</div>
+        <div class="exam-notice-sub">روز مهم — تمرکز کامل</div>
+      </div>
+    `;
+  } else if (info.isExamE) {
+    html += `
+      <div class="exam-notice elec-exam">
+        <div class="exam-notice-emoji">⚡</div>
+        <div class="exam-notice-title">امتحان کاربرد برق و الکترونیک</div>
+        <div class="exam-notice-sub">روز مهم — تمرکز کامل</div>
+      </div>
+    `;
+  }
+
+  if (info.isGym) {
+    html += `
+      <div class="gym-notice">
+        <div class="gym-notice-icon">💪</div>
+        <div class="gym-notice-text">روز باشگاه — سوالات روزانه نصف هستند</div>
+      </div>
+    `;
+  }
+
+  // Videos
+  const hasVideos = info.thermoV > 0 || info.elecV.length > 0;
+  if (hasVideos) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">ویدیوهای امروز</div>
+      <div class="detail-video-list">`;
+
+    if (info.thermoV > 0) {
+      html += `
+        <div class="detail-video-item">
+          <div class="detail-video-icon thermo">🔥</div>
+          <div class="detail-video-text">
+            <div class="detail-video-name">ترمودینامیک ۲</div>
+            <div class="detail-video-sub">مرجع: ون وایلن</div>
+          </div>
+          <span class="detail-badge thermo">${toPersianNum(info.thermoV)} ویدیو</span>
+        </div>`;
+    }
+
+    if (info.elecV.length > 0) {
+      const vids = info.elecV.map(v => `جلسه ${toPersianNum(v)}`).join('، ');
+      html += `
+        <div class="detail-video-item">
+          <div class="detail-video-icon elec">⚡</div>
+          <div class="detail-video-text">
+            <div class="detail-video-name">کاربرد برق و الکترونیک</div>
+            <div class="detail-video-sub">${vids}</div>
+          </div>
+          <span class="detail-badge elec">${toPersianNum(info.elecV.length)} ویدیو</span>
+        </div>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  // Questions
+  if (info.qs) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">سوالات امروز</div>
+      <div class="detail-cards">
+        <div class="detail-card thermo-card">
+          <div class="detail-card-label thermo">ترمودینامیک</div>
+          <div class="detail-card-value">${toPersianNum(info.qs.thermo)}</div>
+          <div class="detail-card-unit">سوال</div>
+        </div>
+        <div class="detail-card elec-card">
+          <div class="detail-card-label elec">کاربرد برق</div>
+          <div class="detail-card-value">${toPersianNum(info.qs.elec)}</div>
+          <div class="detail-card-unit">سوال</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Review tasks
+  if (info.reviewT) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">جمع‌بندی ترمودینامیک</div>
+      <div class="review-list">`;
+    info.reviewT.forEach(t => html += `<div class="review-item">${t}</div>`);
+    html += `</div></div>`;
+  }
+
+  if (info.reviewE) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">جمع‌بندی کاربرد برق</div>
+      <div class="review-list">`;
+    info.reviewE.forEach(t => html += `<div class="review-item">${t}</div>`);
+    html += `</div></div>`;
+  }
+
+  if (!hasVideos && !info.qs && !info.reviewT && !info.reviewE && !info.isExamT && !info.isExamE) {
+    html += `<div class="no-today" style="padding:20px 0;font-size:15px">روز استراحت 🎉</div>`;
+  }
+
+  document.getElementById('drawerContent').innerHTML = html;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+
+// Swipe down to close drawer
+let touchStartY = 0;
+document.getElementById('drawer').addEventListener('touchstart', e => {
+  touchStartY = e.touches[0].clientY;
+});
+document.getElementById('drawer').addEventListener('touchend', e => {
+  if (e.changedTouches[0].clientY - touchStartY > 60) closeDrawer();
+});
+
+// ═══════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════
+
+function toPersianNum(n) {
+  return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+}
+
+// ═══════════════════════════════════════
+//  PWA SERVICE WORKER
+// ═══════════════════════════════════════
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+
+renderCalendar();
+renderTodayBanner();
+
+// Scroll today into view if possible
+setTimeout(() => {
+  if (isTirMonth) {
+    const todayCard = document.querySelector('.day-card.is-today');
+    if (todayCard) todayCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}, 300);
+</script>
+</body>
+</html>
